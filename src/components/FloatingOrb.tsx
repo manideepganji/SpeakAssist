@@ -215,13 +215,11 @@ const FloatingOrb = ({
       className="fixed inset-0 pointer-events-none z-50"
     >
       <motion.div
-        drag
-        dragConstraints={constraintsRef}
-        dragElastic={0.1}
-        dragMomentum={false}
-        initial={{ x: 20, y: typeof window !== 'undefined' ? window.innerHeight - 120 : 500 }}
-        className="absolute pointer-events-auto cursor-grab active:cursor-grabbing"
-        whileDrag={{ scale: 1.1 }}
+        initial={{
+          x: typeof window !== "undefined" ? window.innerWidth - 96 : 300,
+          y: 20
+        }}
+        className="fixed pointer-events-auto top-0 right-0 z-50"
       >
         <div className="relative">
           {/* Pulse rings when listening */}
