@@ -28,6 +28,9 @@ export const useSpeechRecognition = (
 
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
+  // Detect if device is mobile
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
   useEffect(() => {
     const SpeechRecognitionAPI =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -35,9 +38,16 @@ export const useSpeechRecognition = (
     if (SpeechRecognitionAPI) {
       setIsSupported(true);
       const recognition = new SpeechRecognitionAPI();
-      recognition.continuous = continuous;
+      
+      // Adjust settings for mobile devices
+      recognition.continuous = isMobile ? false : continuous;
       recognition.interimResults = interimResults;
       recognition.lang = lang;
+      
+      // For mobile, use shorter max alternatives and adjust other settings
+      if (isMobile) {
+        recognition.maxAlternatives = 1;
+      }
 
       recognition.onresult = (event) => {
         let finalTranscript = "";
@@ -66,7 +76,15 @@ export const useSpeechRecognition = (
       };
 
       recognition.onend = () => {
-        if (isListening && continuous) {
+        // On mobile, restart recognition if still listening (since continuous is false)
+        if (isMobile && isListening) {
+          try {
+            recognition.start();
+          } catch (error) {
+            console.warn("Could not restart mobile speech recognition:", error);
+            setIsListening(false);
+          }
+        } else if (!isMobile && isListening && continuous) {
           recognition.start();
         } else {
           setIsListening(false);
